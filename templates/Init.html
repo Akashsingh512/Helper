@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Config Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Client Configuration Saver</h1>
+
+        <div class="form-section">
+            <label for="companyName">Client Company Name:</label>
+            <input type="text" id="companyName" placeholder="e.g., Acme Inc.">
+            
+            <label for="accessToken">Page Access Token (for all pages):</label>
+            <textarea id="accessToken" rows="5" placeholder="Paste your EAA... token here"></textarea>
+        </div>
+
+        <hr>
+
+        <div class="form-section">
+            <h2>Add Pages</h2>
+            <p>Add all the pages associated with the token above.</p>
+            
+            <div class="add-page-form">
+                <input type="text" id="pageName" placeholder="Page Name (e.g., Main Page)">
+                <input type="text" id="pageId" placeholder="Page ID (e.g., 514820128379601)">
+                <button id="addPageBtn" class="btn-add">Add Page</button>
+            </div>
+            
+            <h3>Added Pages:</h3>
+            <ul id="pagesList">
+                </ul>
+        </div>
+
+        <hr>
+
+        <button id="saveBtn" class="btn-save">Generate and Download Config File</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+<script>
+// This array will hold our page objects
+let pagesList = [];
+
+// Get references to all the UI elements
+const companyNameEl = document.getElementById('companyName');
+const accessTokenEl = document.getElementById('accessToken');
+const pageNameEl = document.getElementById('pageName');
+const pageIdEl = document.getElementById('pageId');
+const addPageBtn = document.getElementById('addPageBtn');
+const pagesListEl = document.getElementById('pagesList');
+const saveBtn = document.getElementById('saveBtn');
+
+// --- 1. Add Page Function ---
+addPageBtn.addEventListener('click', () => {
+    const pageName = pageNameEl.value.trim();
+    const pageId = pageIdEl.value.trim();
+
+    if (!pageName || !pageId) {
+        alert("Please fill in both Page Name and Page ID.");
+        return;
+    }
+
+    // Add page to our array
+    pagesList.push({ name: pageName, id: pageId });
+
+    // Update the visual list on the page
+    renderPages();
+
+    // Clear the input fields
+    pageNameEl.value = '';
+    pageIdEl.value = '';
+});
+
+// --- 2. Render Pages Function ---
+function renderPages() {
+    // Clear the current list
+    pagesListEl.innerHTML = '';
+
+    if (pagesList.length === 0) {
+        pagesListEl.innerHTML = '<li>No pages added yet.</li>';
+        return;
+    }
+
+    // Add each page from the array to the <ul>
+    pagesList.forEach(page => {
+        const li = document.createElement('li');
+        li.textContent = `Name: ${page.name}, ID: ${page.id}`;
+        pagesListEl.appendChild(li);
+    });
+}
+
+// --- 3. Save Config File Function (THE UPDATED PART) ---
+saveBtn.addEventListener('click', async () => {
+    const companyName = companyNameEl.value.trim();
+    const accessToken = accessTokenEl.value.trim();
+
+    // Validation
+    if (!companyName || !accessToken) {
+        alert("Please fill in Company Name and Access Token.");
+        return;
+    }
+    if (pagesList.length === 0) {
+        alert("Please add at least one page.");
+        return;
+    }
+
+    // --- Send data to the Python server ---
+    try {
+        const response = await fetch('/save-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // This is where we send all the data as JSON
+            body: JSON.stringify({
+                companyName: companyName,
+                accessToken: accessToken,
+                pagesList: pagesList
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) { // Check if response status is 2xx
+            alert("Success! Configuration saved to server.");
+            // Clear the form
+            companyNameEl.value = '';
+            accessTokenEl.value = '';
+            pagesList = [];
+            renderPages();
+        } else {
+            // Show error message from the server
+            alert("Error saving config: " + (result.detail || result.message));
+        }
+
+    } catch (error) {
+        console.error("Fetch error:", error);
+        alert("A critical error occurred. Check the server console.");
+    }
+});
+
+// Initial render to show "No pages" message
+renderPages();
+
+</script>
+<style>
+    body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+h1 {
+    text-align: center;
+    color: #1a73e8;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+h2, h3 {
+    color: #333;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Important for 100% width */
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.add-page-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.add-page-form input[type="text"] {
+    flex: 1; /* Makes fields grow to fill space */
+}
+
+button {
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-add {
+    background-color: #e0e0e0;
+    color: #333;
+}
+.btn-add:hover {
+    background-color: #d0d0d0;
+}
+
+.btn-save {
+    background-color: #4CAF50;
+    color: white;
+    width: 100%;
+    font-size: 16px;
+    padding: 15px;
+    margin-top: 20px;
+}
+.btn-save:hover {
+    background-color: #45a049;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+ul li {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-family: "Courier New", Courier, monospace;
+}
+
+ul li:last-child {
+    border-bottom: none;
+}
+</style>
+</html>

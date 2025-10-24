@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caption Generator & Auto-Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 30px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .toggle-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        #pageSelect {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .caption-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Caption Generator</h1>
+        
+        <form id="captionForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="clientName">Client Name:</label>
+                <input type="text" id="clientName" name="client_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="platform">Platform:</label>
+                <select id="platform" name="platform" required>
+                    <option value="">Select Platform</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="linkedin">LinkedIn</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Upload Image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            
+            <div class="form-group">
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoPost">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Auto-post to Social Media</span>
+                </div>
+                
+                <div id="pageSelect" class="form-group">
+                    <label for="pageId">Select Facebook Page:</label>
+                    <select id="pageId" name="page_id">
+                        <option value="">Loading pages...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" id="submitBtn">Generate Caption</button>
+        </form>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <p>Generating caption...</p>
+        </div>
+        
+        <div id="result" class="result">
+            <h3>Generated Caption:</h3>
+            <div id="captionBox" class="caption-box"></div>
+            <div id="postStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('captionForm');
+        const autoPostCheckbox = document.getElementById('autoPost');
+        const pageSelectDiv = document.getElementById('pageSelect');
+        const pageSelect = document.getElementById('pageId');
+        const platformSelect = document.getElementById('platform');
+        const clientNameInput = document.getElementById('clientName');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Show/hide page selector based on auto-post toggle and platform
+        function updatePageSelector() {
+            const isFacebook = platformSelect.value === 'facebook';
+            const isAutoPost = autoPostCheckbox.checked;
+            
+            if (isFacebook && isAutoPost) {
+                pageSelectDiv.style.display = 'block';
+                loadClientPages();
+            } else {
+                pageSelectDiv.style.display = 'none';
+            }
+        }
+
+        autoPostCheckbox.addEventListener('change', updatePageSelector);
+        platformSelect.addEventListener('change', updatePageSelector);
+        
+        // Load client pages when needed
+        async function loadClientPages() {
+            const clientName = clientNameInput.value.trim();
+            if (!clientName) {
+                pageSelect.innerHTML = '<option value="">Enter client name first</option>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/get-client-pages/${encodeURIComponent(clientName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    pageSelect.innerHTML = '<option value="">Select a page</option>';
+                    data.pages.forEach(page => {
+                        const option = document.createElement('option');
+                        option.value = page.id;
+                        option.textContent = page.name;
+                        pageSelect.appendChild(option);
+                    });
+                } else {
+                    pageSelect.innerHTML = '<option value="">No config found for this client</option>';
+                }
+            } catch (error) {
+                pageSelect.innerHTML = '<option value="">Error loading pages</option>';
+                console.error('Error loading pages:', error);
+            }
+        }
+
+        clientNameInput.addEventListener('blur', () => {
+            if (autoPostCheckbox.checked && platformSelect.value === 'facebook') {
+                loadClientPages();
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            formData.append('auto_post', autoPostCheckbox.checked);
+            
+            if (autoPostCheckbox.checked && platformSelect.value === 'facebook' && pageSelect.value) {
+                formData.append('page_id', pageSelect.value);
+            }
+            
+            resultDiv.classList.remove('show');
+            loadingDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/generate_caption', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('captionBox').textContent = data.caption;
+                    
+                    // Show post status if auto-post was enabled
+                    const postStatusDiv = document.getElementById('postStatus');
+                    postStatusDiv.innerHTML = '';
+                    
+                    if (data.post_success) {
+                        postStatusDiv.innerHTML = `
+                            <div class="success-message">
+                                 ${data.post_message}<br>
+                                Post ID: ${data.post_id}
+                            </div>
+                        `;
+                    } else if (data.post_error) {
+                        postStatusDiv.innerHTML = `
+                            <div class="error-message">
+                                Failed to post to Facebook: ${data.post_error}
+                            </div>
+                        `;
+                    }
+                    
+                    resultDiv.classList.add('show');
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
