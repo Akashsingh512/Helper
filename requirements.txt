@@ -3,13 +3,9 @@ uvicorn
 python-multipart
 requests
 python-dotenv
-requests
 pydantic
 jinja2
 aiofiles
 sqlalchemy
 databases
 typing
-tempfile
-dotenv
-base64
