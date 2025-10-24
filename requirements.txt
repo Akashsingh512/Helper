@@ -3,7 +3,6 @@ uvicorn
 python-multipart
 requests
 python-dotenv
-os
 requests
 pydantic
 jinja2
