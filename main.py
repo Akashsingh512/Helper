@@ -17,7 +17,7 @@ import base64
 from datetime import datetime
 
 # At the top of main.py with other imports
-# from Data import extract_all_pages, extract_pages_for_client, get_pages_and_instagram
+from Data import extract_all_pages, extract_pages_for_client, get_pages_and_instagram
 
 # Import your services
 from ai_service import get_caption_perplexity
