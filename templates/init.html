@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Configuration Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .platform-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .platform-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .platform-icon {
+            font-size: 24px;
+        }
+        
+        .pages-list, .company-list {
+            margin-top: 15px;
+        }
+        
+        .page-item, .company-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .page-item input, .company-item input {
+            flex: 1;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button.remove-btn {
+            background: #dc3545;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        button.add-btn {
+            background: #28a745;
+            margin-top: 10px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 30px;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #0c5460;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Client Configuration</h1>
+        <p class="subtitle">Set up social media credentials for your clients</p>
+        
+        <form id="configForm">
+            <!-- Company Name -->
+            <div class="form-group">
+                <label for="companyName">Company/Client Name:</label>
+                <input type="text" id="companyName" required>
+                <div class="help-text">This will be used to identify and save the configuration</div>
+            </div>
+            
+            <!-- Facebook Section -->
+            <div class="platform-section">
+                <h3><span class="platform-icon">📘</span> Facebook Configuration</h3>
+                <div class="form-group">
+                    <label for="fbAccessToken">Page Access Token:</label>
+                    <input type="text" id="fbAccessToken">
+                </div>
+                
+                <label>Facebook Pages:</label>
+                <div id="pagesList" class="pages-list"></div>
+                <button type="button" class="add-btn" onclick="addPage()">+ Add Facebook Page</button>
+            </div>
+            
+            <!-- Twitter Section -->
+            <div class="platform-section">
+                <h3><span class="platform-icon">🐦</span> Twitter Configuration</h3>
+                <div class="info-box">
+                    Get your Twitter API credentials from <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">Twitter Developer Portal</a>
+                </div>
+                <div class="form-group">
+                    <label for="twitterApiKey">API Key:</label>
+                    <input type="text" id="twitterApiKey">
+                </div>
+                <div class="form-group">
+                    <label for="twitterApiSecret">API Secret:</label>
+                    <input type="text" id="twitterApiSecret">
+                </div>
+                <div class="form-group">
+                    <label for="twitterAccessToken">Access Token:</label>
+                    <input type="text" id="twitterAccessToken">
+                </div>
+                <div class="form-group">
+                    <label for="twitterAccessTokenSecret">Access Token Secret:</label>
+                    <input type="text" id="twitterAccessTokenSecret">
+                </div>
+            </div>
+            
+            <!-- LinkedIn Section -->
+            <div class="platform-section">
+                <h3><span class="platform-icon">💼</span> LinkedIn Configuration</h3>
+                <div class="info-box">
+                    <strong>Note:</strong> Run the <code>get_linkedin_company_urns.py</code> script to find your company URNs.<br>
+                    Token must have <code>w_member_social</code> and <code>w_organization_social</code> scopes.
+                </div>
+                <div class="form-group">
+                    <label for="linkedinAccessToken">Access Token:</label>
+                    <input type="text" id="linkedinAccessToken">
+                    <div class="help-text">Get from LinkedIn OAuth 2.0 authentication</div>
+                </div>
+                <div class="form-group">
+                    <label for="linkedinPersonUrn">Person URN (Optional - for personal posts):</label>
+                    <input type="text" id="linkedinPersonUrn" placeholder="urn:li:person:YOUR_PERSON_ID">
+                    <div class="help-text">Only needed if posting to personal profile</div>
+                </div>
+                
+                <label>Company URNs (for company page posts):</label>
+                <div id="linkedinCompanyList" class="company-list"></div>
+                <button type="button" class="add-btn" onclick="addLinkedInCompanyUrn()">+ Add Company URN</button>
+            </div>
+            
+            <button type="submit" class="submit-btn">💾 Save Configuration</button>
+        </form>
+        
+        <div id="successMessage" class="success-message"></div>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <script>
+        // Add Facebook Page
+        function addPage() {
+            const list = document.getElementById('pagesList');
+            const div = document.createElement('div');
+            div.className = 'page-item';
+            div.innerHTML = `
+                <input type="text" placeholder="Page Name" class="page-name">
+                <input type="text" placeholder="Page ID" class="page-id">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            list.appendChild(div);
+        }
+
+        // Add LinkedIn Company URN
+        function addLinkedInCompanyUrn() {
+            const list = document.getElementById('linkedinCompanyList');
+            const div = document.createElement('div');
+            div.className = 'company-item';
+            div.innerHTML = `
+                <input type="text" class="linkedin-company-urn" placeholder="urn:li:organization:12345678">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            list.appendChild(div);
+        }
+
+        // Initialize with one page and one company URN field
+        addPage();
+        addLinkedInCompanyUrn();
+
+        // Handle form submission
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Collect Facebook Pages
+            const pages = [];
+            document.querySelectorAll('.page-item').forEach(item => {
+                const name = item.querySelector('.page-name').value.trim();
+                const id = item.querySelector('.page-id').value.trim();
+                if (name && id) {
+                    pages.push({ name, id });
+                }
+            });
+            
+            // Collect LinkedIn Company URNs
+            const companyUrns = [];
+            document.querySelectorAll('.linkedin-company-urn').forEach(input => {
+                const urn = input.value.trim();
+                if (urn) {
+                    companyUrns.push(urn);
+                }
+            });
+            
+            // Build config data
+            const data = {
+                companyName: document.getElementById('companyName').value.trim(),
+                accessToken: document.getElementById('fbAccessToken').value.trim() || null,
+                pagesList: pages,
+                twitterConfig: null,
+                linkedinConfig: null
+            };
+            
+            // Add Twitter config if any field is filled
+            const twitterApiKey = document.getElementById('twitterApiKey').value.trim();
+            const twitterApiSecret = document.getElementById('twitterApiSecret').value.trim();
+            const twitterAccessToken = document.getElementById('twitterAccessToken').value.trim();
+            const twitterAccessTokenSecret = document.getElementById('twitterAccessTokenSecret').value.trim();
+            
+            if (twitterApiKey || twitterApiSecret || twitterAccessToken || twitterAccessTokenSecret) {
+                data.twitterConfig = {
+                    api_key: twitterApiKey,
+                    api_secret: twitterApiSecret,
+                    access_token: twitterAccessToken,
+                    access_token_secret: twitterAccessTokenSecret
+                };
+            }
+            
+            // Add LinkedIn config if any field is filled
+            const linkedinAccessToken = document.getElementById('linkedinAccessToken').value.trim();
+            const linkedinPersonUrn = document.getElementById('linkedinPersonUrn').value.trim();
+            
+            if (linkedinAccessToken || linkedinPersonUrn || companyUrns.length > 0) {
+                data.linkedinConfig = {
+                    access_token: linkedinAccessToken,
+                    person_urn: linkedinPersonUrn || null,
+                    company_urns: companyUrns
+                };
+            }
+            
+            // Send to backend
+            try {
+                const response = await fetch('/save-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    successMessage.textContent = '✅ ' + result.message;
+                    successMessage.style.display = 'block';
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                } else {
+                    errorMessage.textContent = '❌ Error: ' + result.detail;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = '❌ Error: ' + error.message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
